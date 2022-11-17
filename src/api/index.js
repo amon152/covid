@@ -1,17 +1,50 @@
-import axios from "axios";
+import axios from 'axios';
 
-const options = {
-  method: 'GET',
-  url: 'https://covid-19-statistics.p.rapidapi.com/reports/total',
-  params: {date: '2020-04-07'},
-  headers: {
-    'X-RapidAPI-Key': '8284a9d108msh6d0512163f46141p1d9275jsncd399cd38006',
-    'X-RapidAPI-Host': 'covid-19-statistics.p.rapidapi.com'
+const url = 'https://covid19.mathdro.id/api';
+
+export const fetchData = async (country) => {
+  let changeableUrl = url;
+
+  if (country) {
+    changeableUrl = `${url}/countries/${country}`;
+  }
+
+  try {
+    const { data: { confirmed, recovered, deaths, lastUpdate } } = await axios.get(changeableUrl);
+
+    return { confirmed, recovered, deaths, lastUpdate };
+  } catch (error) {
+    return error;
   }
 };
 
-axios.request(options).then(function (response) {
-	console.log(response.data);
-}).catch(function (error) {
-	console.error(error);
-});
+// export const fetchDailyData = async () => {
+//   try {
+//     const { data } = await axios.get(`${url}/daily`);
+
+//     return data.map(({ confirmed, deaths, reportDate: date }) => ({ confirmed: confirmed.total, deaths: deaths.total, date }));
+//   } catch (error) {
+//     return error;
+//   }
+// };
+
+// Instead of Global, it fetches the daily data for the US
+export const fetchDailyData = async () => {
+    try {
+      const { data } = await axios.get('https://api.covidtracking.com/v1/us/daily.json');
+  
+      return data.map(({ positive, recovered, death, dateChecked: date }) => ({ confirmed: positive, recovered, deaths: death, date }));
+    } catch (error) {
+      return error;
+    }
+  };
+
+export const fetchCountries = async () => {
+  try {
+    const { data: { countries } } = await axios.get(`${url}/countries`);
+
+    return countries.map((country) => country.name);
+  } catch (error) {
+    return error;
+  }
+};
